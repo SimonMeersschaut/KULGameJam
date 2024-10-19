@@ -1,7 +1,5 @@
 from world import world
 import pygame
-# from spritesheet import Spritesheet
-
 
 ################################# LOAD UP A BASIC WINDOW AND CLOCK #################################
 pygame.init()
@@ -24,16 +22,6 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             pass
-        #     if event.key == pygame.K_LEFT:
-        #         player.LEFT_KEY, player.FACING_LEFT = True, True
-        #     elif event.key == pygame.K_RIGHT:
-        #         player.RIGHT_KEY, player.FACING_LEFT = True, False
-        #
-        # if event.type == pygame.KEYUP:
-        #     if event.key == pygame.K_LEFT:
-        #         player.LEFT_KEY = False
-        #     elif event.key == pygame.K_RIGHT:
-        #         player.RIGHT_KEY = False
 
     ################################# UPDATE/ Animate SPRITE #################################
 
