@@ -15,20 +15,20 @@ class Tile:
         if self.tile_id == -1:
             return None # air
         else:
-            return self.tileset[tile_id]
+            return self.tileset[self.tile_id]
 
-def load_csv_map(filename):
-    def get_tile(tile_id: int) -> Tile:
+def load_csv_map(filename, tileset):
+    def get_tile(tile_id: int, tileset: object) -> Tile:
         if tile_id in TILE_DATA:
             return TILE_DATA[tile_id]()
         else:
-            return Tile(tile_id)
+            return Tile(tile_id, tileset)
     
     map_data = []
     with open(filename, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         for row in reader:
-            map_data.append([get_tile(int(tile_id)) for tile_id in row])
+            map_data.append([get_tile(int(tile_id), tileset) for tile_id in row])
     return map_data
 
 # Function to load tileset
@@ -52,5 +52,6 @@ def prerender_map(map_data, tileset, tilesize):
             tile_image = tile.render_image()
             if tile_image is not None:
                 # do not render if tile is air
-                map_surface.blit(tile, (col_idx * tilesize, row_idx * tilesize))
+                # tile.render_image()
+                map_surface.blit(tile.render_image(), (col_idx * tilesize, row_idx * tilesize))
     return map_surface
