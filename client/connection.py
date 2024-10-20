@@ -1,4 +1,5 @@
 import socket
+import json
 
 HOST = '127.0.0.1' # "94.225.3.78" # ip of the server
 PORT = 8080  # Port to listen on
@@ -6,27 +7,25 @@ PORT = 8080  # Port to listen on
 class Connection:
     """Represents a connection between the client and the server."""
     def __init__(self):
-        self.connect()
-        # assert self.ping_server()
+        connected = self.connect()
+        assert connected, "Not connected to the server."
+        print('Connected to the server.')
     
     def connect(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((HOST, PORT))
-            s.sendall(b"Hello, world")
-            data = s.recv(1024)
-            print(data)
-    
-    def ping_server(self):
-        """Returns if the server responds to a ping."""
-        ...
+        try:
+            self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM).__enter__()
+            self.conn.connect((HOST, PORT))
+            return True
+        except ConnectionRefusedError:
+            # server is not running
+            return False
     
     def send_packet(self, packet: dict) -> dict:
-        """Send a packet to the server."""
-        ...
+        """Send a packet to the server and read the response."""
+        msg = json.dumps(packet).encode('utf-8')
+        self.conn.sendall(msg)
+        data = self.conn.recv(1024)
+        return json.loads(data)
     
-    def clear_buffer(self) -> list[dict]:
-        """Return received packets."""
-        ...
-
 if __name__ == '__main__':
     conn = Connection()

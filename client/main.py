@@ -27,5 +27,5 @@ while running:
 
     ################################# UPDATE WINDOW AND DISPLAY #################################
     screen.fill((0, 180, 240)) # Fills the entire screen with light blue
-    screen.blit(world.image, (0, 0))
+    world.render(screen)
     pygame.display.flip()
