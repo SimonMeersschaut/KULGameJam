@@ -1,4 +1,5 @@
 from world import world
+from audio import audio
 import pygame
 
 ################################# LOAD UP A BASIC WINDOW AND CLOCK #################################
@@ -7,8 +8,8 @@ DISPLAY_W, DISPLAY_H = 480, 270
 screen = pygame.display.set_mode(((DISPLAY_W,DISPLAY_H)))
 running = True
 clock = pygame.time.Clock()
-
-################################# LOAD PLAYER AND SPRITESHEET###################################
+pygame.mixer.init()
+################################# LOAD PLAYER AND SPRITESHEET ###################################
 
 #################################### LOAD THE LEVEL #######################################
 world = world.World()
@@ -26,6 +27,6 @@ while running:
     ################################# UPDATE/ Animate SPRITE #################################
 
     ################################# UPDATE WINDOW AND DISPLAY #################################
-    screen.fill((0, 180, 240)) # Fills the entire screen with light blue
+    # screen.fill((0, 180, 240)) # Fills the entire screen with light blue
     world.render(screen)
     pygame.display.flip()

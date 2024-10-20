@@ -1,19 +1,21 @@
 import pygame
 from . import loader
-from .filehandler import filehandler
-
+from filehandler import filehandler
+from audio import audio
 
 class World:
     TILE_SIZE = 64
     def __init__(self):
-        filehandler.load_tile_set('world/tiles.set.png', World.TILE_SIZE)
+        filehandler.load_tile_set('resources/images/tiles.set.png', World.TILE_SIZE)
+        audio.preload('resources/audio/background.ogg')
         self.load_level(1)
         self.tiles = []
     
     def load_level(self, level_id: int) -> None:
-        self.tiles = loader.load_tiles(f'world/levels/{level_id}.csv', 'world/tiles.set.png')
+        self.tiles = loader.load_tiles(f'resources/levels/{level_id}.csv', 'resources/images/tiles.set.png')
         self.image = loader.prerender_map(self.tiles, World.TILE_SIZE)
-        self.background_image_path = 'world/background.jpg'
+        self.background_image_path = 'resources/images/background.jpg'
+        audio.play('resources/audio/background.ogg')
     
     def render(self, screen: object) -> None:
         """Render the entire world."""

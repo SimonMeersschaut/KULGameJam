@@ -1,6 +1,6 @@
 import csv
 import pygame
-from .filehandler import filehandler
+from filehandler import filehandler
 
 TILE_DATA = {}
 
