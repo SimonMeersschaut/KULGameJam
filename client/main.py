@@ -4,7 +4,7 @@ import pygame
 
 ################################# LOAD UP A BASIC WINDOW AND CLOCK #################################
 pygame.init()
-DISPLAY_W, DISPLAY_H = 480, 270
+DISPLAY_W, DISPLAY_H = 516, 516
 screen = pygame.display.set_mode(((DISPLAY_W,DISPLAY_H)))
 running = True
 clock = pygame.time.Clock()
@@ -23,7 +23,7 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             pass
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        if pygame.mouse.get_pressed()[0]:
             world.spray(pygame.mouse.get_pos())
 
     ################################# UPDATE/ Animate SPRITE #################################
