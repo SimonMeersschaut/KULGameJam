@@ -1,0 +1,4 @@
+- special effects
+    - on eating
+    - on dead
+    - 

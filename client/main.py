@@ -23,8 +23,8 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             pass
-        if pygame.mouse.get_pressed()[0]:
-            world.spray(pygame.mouse.get_pos())
+        # if pygame.mouse.get_pressed()[0]:
+        #     world.spray(pygame.mouse.get_pos())
 
     ################################# UPDATE/ Animate SPRITE #################################
 
