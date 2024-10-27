@@ -19,9 +19,17 @@ mode = 'menu'
 world.preload(screen)
 menu.initialize()
 
+audio.preload('resources/audio/background.mp3')
+audio.play('resources/audio/background.mp3')
+audio_counter = 0
+
 ################################# GAME LOOP ##########################
 while running:
     clock.tick(60)
+    audio_counter += 1
+    if audio_counter > 2040:
+        audio_counter = 0
+        audio.play('resources/audio/background.mp3')
     ################################# CHECK PLAYER INPUT #################################
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

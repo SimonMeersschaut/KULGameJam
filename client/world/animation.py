@@ -12,9 +12,10 @@ class Animation:
     def finish(self, camera, world):
         camera.delta_t = 1/60 # default speed
         camera.allow_rendering = True # enable other rendering
-        world.animations.remove(self)
         if self.on_done is not None:
             self.on_done()
+        world.animations.remove(self)
+        # print(world.animations)
 
     def render(self, camera, screen, world):
         # camera.delta_t = (1/60)/10
@@ -28,9 +29,9 @@ class SlideAnimation(Animation):
         super().__init__(on_done)
     
     def render(self, camera, screen, world):
+        camera.delta_t = 0
         im = filehandler.get_image(f'resources/images/slides/slide_{self.index}.png')
         screen.blit(im, (0, 0))
-        camera.delta_t = 0
         camera.allow_rendering = False
         h = 5
         w = (time.time() - self.start_t)/SlideAnimation.DURATION*1280

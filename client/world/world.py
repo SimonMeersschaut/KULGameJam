@@ -57,7 +57,7 @@ class World:
         self.enemies = []
         self.ants = [Ant()]
         self.level_data = {}
-        self.name = 'Simon'
+        self.name = input('Please enter your name: ')
     
     def load_wave(self, screen):
         # try:
@@ -75,12 +75,12 @@ class World:
             slide_indices = LEVELS[meter.level]['pre-slides']
             if len(slide_indices) > 0:
                 # load slideshow
-                last_slide = SlideAnimation(slide_indices[-1])
-                slide_indices = slide_indices[:-1]
                 slide_indices.reverse()
-                for slide_index in slide_indices:
-                    last_slide = SlideAnimation(index=slide_index, on_done=lambda: self.run_animation(last_slide))
-                self.run_animation(last_slide)
+                self.slides = []
+                
+                # for slide_index in slide_indices:
+                #     self.slides.append(SlideAnimation(slide_index, on_done=lambda: self.run_animation(self.slides[-1])))
+                self.run_animation(SlideAnimation(slide_indices[0], on_done=None))
         # spawn food
         self.food = []
         for (amount, food_class) in LEVELS[meter.level]['food']:
@@ -190,10 +190,9 @@ class Meter:
         self.x = 700
         self.y = 600
         self.animation_frame = 0
-        self.score = 390
-        # self.wave_index = 0
-        self.bar = 4 #TODO
-        self.level = 4 #TODO set 0
+        self.score = 0
+        self.bar = 0
+        self.level = 0
         
     
     def initialize(self, screen):

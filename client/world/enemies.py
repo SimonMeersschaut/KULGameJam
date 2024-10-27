@@ -53,7 +53,7 @@ class Foot(Enemy):
     DURATION = 3
     WARNING_TIME =  1
     def __init__(self, delay: int):
-        self.x = random.randint(0, 1200)
+        self.x = random.randint(0, 1000)
         self.y = random.randint(0, 700)
         self.width = 256
         self.height = 256
