@@ -7,7 +7,7 @@ import numpy as np
 from math import atan2
 from .food import *
 import time
-from .animation import RageAnimation, DeadAnimation, GameOverAnimation
+from .animation import RageAnimation, DeadAnimation, GameOverAnimation, SlideAnimation
 from .enemies import *
 # from old.connection import connection
 import requests
@@ -49,28 +49,35 @@ def slerp(v0, v1, t):
 class World:
     TILE_SIZE = 48
     def __init__(self):
-        # self.i = 0
-        self.wave = 0
-        self.level = 0
         self.animations = []
         self.score = 0
         self.rage = False
         self.running = True
         self.food = []
         self.enemies = []
-        self.wave_data = {}
-        self.last_wave_index = 0
+        self.ants = [Ant()]
+        self.level_data = {}
+        self.name = 'Simon'
     
     def load_wave(self, screen):
-        try:
-            self.wave_data = LEVELS[self.level][meter.wave_index]
-            self.food = self.wave_data['food']
-            if meter.wave_index == 0 and self.level == 0:
-                # reset ants
-                self.ants = [Ant()]
-        except IndexError:
-            # Game Finished
-            self.finish()
+        # try:
+            if meter.bar == 0:
+                # run slideshow
+                slide_indices = LEVELS[meter.level]['pre-slides']
+                if len(slide_indices) > 0:
+                    # load slideshow
+                    last_slide = SlideAnimation(slide_indices[-1])
+                    slide_indices = slide_indices[:-1]
+                    slide_indices.reverse()
+                    for slide_index in slide_indices:
+                        last_slide = SlideAnimation(index=slide_index, on_done=lambda: self.run_animation(last_slide))
+                    self.run_animation(last_slide)
+            # spawn food
+            for (amount, food_class) in LEVELS[meter.level]['food']:
+                self.food += [food_class() for _ in range(amount)]
+        # except IndexError:
+        #     # Game Finished
+        #     self.finish()
     
     def run_animation(self, animation):
         self.animations.append(animation)
@@ -83,9 +90,10 @@ class World:
     
     def execute_rage(self, index:int):
         self.rage = True
-        for new_enemy in self.wave_data['enemies']:
-            new_enemy.initialize()
-            self.enemies.append(new_enemy)
+        # for new_enemy in self.wave_data['enemies']:
+        #     new_enemy.initialize()
+        #     self.enemies.append(new_enemy)
+        # TODO
     
     def preload(self, screen):
         # load images
@@ -112,20 +120,26 @@ class World:
             for animation in self.animations:
                 animation.render(camera, screen, self)
         # update entities
-        self.update(screen)
-        # render
-        for enemy in self.enemies:
-            enemy.render(self, screen)
-        for ant in self.ants:
-            ant.render(screen)
+        if camera.allow_rendering:
+            self.update(screen)
+            # render
+            # render background
+            im = filehandler.get_image('resources/images/background.png')
+            screen.blit(im, (0, 0))
+            # render entities
+            for enemy in self.enemies:
+                enemy.render(self, screen)
+            for ant in self.ants:
+                ant.render(screen)
 
-        meter.render(screen)
-        
-        for food in self.food:
-            food.render(screen)
-        # render score
-        self.text_rendered = self.font.render(str(self.score).zfill(3), True, (100,0,0))
-        screen.blit(self.text_rendered, (400, 200))
+            # render UI
+            meter.render(screen)
+            
+            for food in self.food:
+                food.render(screen)
+            # render score
+            self.text_rendered = self.font.render(str(self.score).zfill(5), True, (100,0,0))
+            screen.blit(self.text_rendered, (1050, 0))
     
     def save_score(self):
         data = {"name": self.name, "score": self.score}
@@ -146,7 +160,8 @@ class Camera:
     def __init__(self):
         # self.scale = .5
         self.delta_t = 1/60
-    
+        self.allow_rendering = True # for slide show animation
+
 class Meter:
     METER_IMAGE = 'resources/images/meter.png'
     HANDS_IMAGE = 'resources/images/hands.png'
@@ -158,7 +173,9 @@ class Meter:
         self.y = 600
         self.animation_frame = 0
         self.score = 80 #TODO
-        self.wave_index = 0
+        # self.wave_index = 0
+        self.bar = 0
+        self.level = 0
         
     
     def initialize(self, screen):
@@ -167,40 +184,51 @@ class Meter:
         self.y = h - 64
     
     def calc_meter(self, score):
-        if score <= 100:
-            return score
-        elif score <= 200:
-            return 100 + (score-100)*1.27
-        elif score <= 300:
-            return 228 + (score-200)*1.2
-        elif score <= 400:
-            return 345 + (score-300)*.95
-        else:
-            return 440 #max
+        BASE = 32 # 16
+        # paint pixels for bars
+        BARS = [
+            0,
+            115 - BASE,
+            243 - BASE,
+            362 - BASE,
+            500 - BASE
+        ]
+        index = int(score/100)
+        print(index)
+        start = BARS[index]
+        end = BARS[index+1]
+        return start + (end-start)*((score % 100)/100)
 
     def render(self, screen):
         # draw meter
         # udpate score
-        w = self.calc_meter(self.score)
+        # w = self.calc_meter(self.score)
         if not world.rage:
             self.score += camera.delta_t*Meter.METER_SPEED
         # check for rage
-        if self.score - 100*(self.wave_index+1) >= 0:
-            world.do_rage(self.wave_index)
-            self.wave_index += 1
+        if self.score - 100*(self.bar+1) >= 0:
+            if self.bar == 3:
+                # level completed
+                self.bar = 0
+                self.level += 1
+                self.score = 0
+            else:
+                self.bar += 1
+            world.do_rage(self.bar)
             
         # draw granny head
         im = filehandler.get_image(Meter.GRANNY_IMAGE)
         screen.blit(im, (self.x, self.y-170))
-        # meter
+        # draw meter
         color = (200, 0, 0)
         if world.rage:
             color = tuple([random.randint(0, 255) for _ in range(3)])
 
-        pygame.draw.rect(screen, (100, 100, 150), (17+self.x, 10+self.y, 440, 50))
-        pygame.draw.rect(screen, color, (17+self.x, 10+self.y, self.calc_meter(w), 50))
+        # pygame.draw.rect(screen, (100, 100, 150), (17+self.x, 10+self.y, 440, 50))
+        pygame.draw.rect(screen, color, (16+self.x, 27+self.y, self.calc_meter(self.score), 21))
         # water droplets
         pygame.draw.rect(screen, Meter.BACKGROUND_COLOR, (450+self.x, self.y + 5, 20, 15))
+        # meter image
         im = filehandler.get_image(Meter.METER_IMAGE)
         screen.blit(im, (self.x, self.y))
         # draw granny

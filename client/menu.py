@@ -23,7 +23,6 @@ class Menu:
     def click(self, pos):
         if 734 > pos[0] > 540 and 499 > pos[1] > 429:
             return True
-        print(pos)
     
     def render(self, screen):
         # background image

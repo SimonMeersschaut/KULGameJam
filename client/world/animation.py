@@ -10,16 +10,32 @@ class Animation:
         self.on_done = on_done
     
     def finish(self, camera, world):
+        print('done!')
         camera.delta_t = 1/60 # default speed
+        camera.allow_rendering = True # enable other rendering
         world.animations.remove(self)
         if self.on_done is not None:
             self.on_done()
+
     
     def render(self, camera, screen, world):
-        camera.delta_t = (1/60)/10
+        # camera.delta_t = (1/60)/10
         if time.time() - self.start_t > type(self).DURATION:
             self.finish(camera, world)
         pygame.draw.rect(screen, (0,0,0), (50, 50, 50, 50))
+
+class SlideAnimation(Animation):
+    DURATION = 3
+    def __init__(self, index: int, on_done=None):
+        self.index = index
+        super().__init__(on_done)
+    
+    def render(self, camera, screen, world):
+        im = filehandler.get_image(f'resources/images/slides/slide_{self.index}.png')
+        screen.blit(im, (0, 0))
+        camera.delta_t = 0
+        camera.allow_rendering = False
+        super().render(camera, screen, world)
 
 class RageAnimation(Animation):
     DURATION = 1
@@ -35,6 +51,7 @@ class RageAnimation(Animation):
         
         # pygame.draw.rect(screen, (0,0,0), (50, 50, 50, 50))
         screen.blit(self.text_rendered, (400, 200))
+        # TODO: super().render()??
 
 class DeadAnimation(Animation):
     def __init__(self, x, y, on_done=None):
