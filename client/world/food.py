@@ -3,13 +3,14 @@ import pygame
 import random
 
 class FoodItem:
+    SIZE = 64
     def __init__(self):
         self.x = random.randint(0, 1200)
         self.y = random.randint(0, 700)
         self.eaten = 0
     
     def render(self, screen):
-        im = filehandler.get_image(type(self).IMAGE, index=self.eaten, tile_size=64)
+        im = filehandler.get_image(type(self).IMAGE, index=self.eaten, tile_size=type(self).SIZE)
         # _, _, w, h = im.get_rect()
         # im = pygame.transform.scale(im, (w*scale, h*scale))
         screen.blit(im, (self.x, self.y))

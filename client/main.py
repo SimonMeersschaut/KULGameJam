@@ -12,7 +12,7 @@ screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 running = True
 clock = pygame.time.Clock()
 pygame.mixer.init()
-mode = 'game' # TODO
+mode = 'menu'
 ################################# LOAD PLAYER AND SPRITESHEET ###################################
 
 #################################### LOAD THE LEVEL #######################################
