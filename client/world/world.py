@@ -2,12 +2,14 @@ import pygame
 import random
 from filehandler import filehandler
 from audio import audio
-from math import cos, sin, degrees
+from math import degrees
 import numpy as np
-from math import atan2, pi, sqrt
+from math import atan2
 from .food import *
 import time
-from .animation import Animation
+from .animation import RageAnimation, DeadAnimation, GameOverAnimation
+from .enemies import *
+from .rounds import LEVELS
 
 def rot_center(image, angle, x, y):
     
@@ -42,74 +44,103 @@ def slerp(v0, v1, t):
 
     return v0_factor * v0 + v1_factor * v1
 
-ROUNDS = [
-    {"tutorial": True, "food": [Apple()]}
-]
-
 class World:
     TILE_SIZE = 48
     def __init__(self):
-        self.i = 0
-        self.animation = None
+        # self.i = 0
+        self.wave = 0
+        self.level = 0
+        self.animations = []
         self.score = 0
         self.rage = False
-        self.load_round(0)
+        self.running = True
+        self.food = []
+        self.enemies = []
+        self.wave_data = {}
+        self.last_wave_index = 0
     
-    def load_round(self, index: int):
-        data = ROUNDS[index]
-        self.food = data['food']
-        if index == 0:
+    def load_wave(self, screen):
+        self.wave_data = LEVELS[self.level][meter.wave_index]
+        self.food = self.wave_data['food']
+        if meter.wave_index == 0 and self.level == 0:
             # reset ants
             self.ants = [Ant()]
     
     def run_animation(self, animation):
-        self.animation = animation
+        self.animations.append(animation)
     
     def do_rage(self, index:int):
+        self.last_wave_index = index
+        world.run_animation(RageAnimation(
+            on_done=lambda: world.execute_rage(self.last_wave_index)
+        ))
+    
+    def execute_rage(self, index:int):
         self.rage = True
-        # TODO spawn enemies
-
-    def preload(self):
+        print(self.wave_data['enemies'])
+        self.enemies += self.wave_data['enemies']
+    
+    def preload(self, screen):
         # load images
-        ...
+        meter.initialize(screen)
+        self.load_wave(screen)
 
-    def update(self):
+    def update(self, screen):
+        if world.rage and self.enemies == []:
+            self.rage = False
+            self.load_wave(screen)
+        
         for ant in self.ants:
             ant.update_direction()
         for ant in self.ants:
             ant.update()
-        self.i += 1
 
     def render(self, screen: object) -> None:
         """Render the entire world."""
-        if self.animation:
-            self.animation.render(camera, screen, self)
-        self.update()
+        # animation
+        if len(self.animations) > 0:
+            for animation in self.animations:
+                animation.render(camera, screen, self)
+        # update entities
+        self.update(screen)
+        # render
+        for enemy in self.enemies:
+            enemy.render(self, screen)
         for ant in self.ants:
             ant.render(screen)
-        
+
         meter.render(screen)
         
         for food in self.food:
-            food.render(screen, scale=camera.scale)
+            food.render(screen)
+        ...
+    
+    def finish(self):
+        self.running = False
+        exit()
 
 class Camera:
     def __init__(self):
-        self.scale = 1
+        # self.scale = .5
         self.delta_t = 1/60
     
 class Meter:
     METER_IMAGE = 'resources/images/meter.png'
     HANDS_IMAGE = 'resources/images/hands.png'
     GRANNY_IMAGE = 'resources/images/granny.png'
+    METER_SPEED = 10 # points/second
     BACKGROUND_COLOR = (181, 240, 224)
-    SPEED = 10
     def __init__(self):
         self.x = 700
-        self.y = 840
+        self.y = 600
         self.animation_frame = 0
-        self.score = 0
-        self.rage_index = 0
+        self.score = 0 #TODO
+        self.wave_index = 0
+    
+    def initialize(self, screen):
+        w, h = screen.get_size()
+        self.x = w/2 - (512/2)
+        self.y = h - 64
     
     def calc_meter(self, score):
         if score <= 100:
@@ -125,27 +156,25 @@ class Meter:
 
     def render(self, screen):
         # draw meter
-        # score
-        if self.score - 10*self.rage_index > 10:
-            self.rage_index += 1
-            for food in world.food:
-                del food
-            world.run_animation(Animation(
-                on_done=lambda: world.do_rage(self.rage_index)
-            ))
-            # world.rage = True
-        w = self.calc_meter(self.score) * Meter.SPEED
-        if world.rage:
-            w = 100*self.rage_index
-        else:
-            self.score += camera.delta_t
-
+        # udpate score
+        w = self.calc_meter(self.score)
+        if not world.rage:
+            self.score += camera.delta_t*Meter.METER_SPEED
+        # check for rage
+        if self.score - 100*(self.wave_index+1) >= 0:
+            world.do_rage(self.wave_index)
+            self.wave_index += 1
+            
         # draw granny head
         im = filehandler.get_image(Meter.GRANNY_IMAGE)
         screen.blit(im, (self.x, self.y-170))
-        # meter        
+        # meter
+        color = (200, 0, 0)
+        if world.rage:
+            color = tuple([random.randint(0, 255) for _ in range(3)])
+
         pygame.draw.rect(screen, (100, 100, 150), (17+self.x, 10+self.y, 440, 50))
-        pygame.draw.rect(screen, (200, 0, 0), (17+self.x, 10+self.y, self.calc_meter(w), 50))
+        pygame.draw.rect(screen, color, (17+self.x, 10+self.y, self.calc_meter(w), 50))
         # water droplets
         pygame.draw.rect(screen, Meter.BACKGROUND_COLOR, (450+self.x, self.y + 5, 20, 15))
         im = filehandler.get_image(Meter.METER_IMAGE)
@@ -156,21 +185,24 @@ class Meter:
 
 class Ant:
     IMAGE = 'resources/images/ant.set.png'
-    SIZE = .5
+    SIZE = .25
     SPEED = 300
     ROTATION_SPEED = 3
     WANDERING_DIST = 10000
     MAX_DISTANCE = 100**2
     EATING_DISTANCE = 3000
     EATING_TIMEOUT = 1
-    def __init__(self):
+    def __init__(self, ant_index=0):
         self.x = 1920/2
         self.y = 1080/2
+        self.width = 128
+        self.height = 128
         self.theta = 0
         self.dir = np.array([1, 0])
         self.frame_index = 0
         self.wandering_dist = Ant.WANDERING_DIST
         self.eating_timeout = 0
+        self.speed = Ant.SPEED # * max(.1, random.random())
 
     def update_direction(self):
         target = pygame.mouse.get_pos()
@@ -189,48 +221,48 @@ class Ant:
     def check_for_food(self):
         for food in world.food:
             dist = (food.x - self.x)**2 + (food.y - self.y)**2
-            if dist < Ant.EATING_DISTANCE and food.eaten < type(food).STATES - 1:
+            if dist < Ant.EATING_DISTANCE and food.eaten <= type(food).STATES - 1:
                 return food
         return False
+
     def move(self):
         if time.time() - self.eating_timeout < Ant.EATING_TIMEOUT:
             # eating
             speed = .5
         else:
             speed = 1
-        self.x += self.dir[0]*Ant.SPEED*camera.scale*camera.delta_t*speed
-        self.y += self.dir[1]*Ant.SPEED*camera.scale*camera.delta_t*speed
+        self.x += self.dir[0]*self.speed*camera.delta_t*speed
+        self.y += self.dir[1]*self.speed*camera.delta_t*speed
 
     def update(self):
-        # move forward
-        if world.rage:
-            # move
-            self.update_direction()
-            self.move()
-        else:
-            food = self.check_for_food()
-            if food:
-                if time.time() - self.eating_timeout > Ant.EATING_TIMEOUT:
-                    # start eating
-                    food.eaten += 1
-                    world.score += type(food).POINTS
-                    self.eating_timeout = time.time()
-                    return
-                else:
-                    self.move()
-            self.move()
+        
+        food = self.check_for_food()
+        if food and time.time() - self.eating_timeout > Ant.EATING_TIMEOUT:
+            # eat
+            food.eat(world)
+            world.ants.append(Ant())
+            world.score += type(food).POINTS
+            self.eating_timeout = time.time()
+        self.move()
                 
     
     def render(self, screen):
         self.frame_index += camera.delta_t*10
-        im = filehandler.get_image(Ant.IMAGE, size=Ant.SIZE*(1*camera.scale), index=int(self.frame_index % 3))
+        im = filehandler.get_image(Ant.IMAGE, index=int(self.frame_index % 3))
         _, _, w, h = im.get_rect()
-        im = pygame.transform.scale(im, (w*camera.scale, h*camera.scale))
+        im = pygame.transform.scale(im, (w*Ant.SIZE, h*Ant.SIZE))
         im, new_rect = rot_center(im, 90-degrees(self.theta), self.x, self.y)
         screen.blit(im, new_rect)
     
-    def __del__(self):
+    def kill(self):
+        world.run_animation(
+            DeadAnimation(self.x, self.y)
+        )
         world.ants.remove(self)
+        if len(world.ants) == 0:
+            world.run_animation(
+                GameOverAnimation()
+            )
 
 world = World()
 camera = Camera()

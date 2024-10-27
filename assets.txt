@@ -1,10 +1,13 @@
-- special effects
+[v] special effects
     - on eating
-    - on dead
+    [v] on dead
 
 - achtergrond
 - mierennest?
 - tutorial
-
-
+- ant skins (superman ...)
+    - bepaalt snelheid van mier
+[v] ant eater warning indicator
 arcade gamer
+- voetstap (schaduw en voet)
+! faster ants

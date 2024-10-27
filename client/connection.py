@@ -9,7 +9,6 @@ class Connection:
     def __init__(self):
         connected = self.connect()
         assert connected, "Not connected to the server."
-        print('Connected to the server.')
     
     def connect(self):
         try:

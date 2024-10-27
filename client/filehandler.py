@@ -24,9 +24,9 @@ class FileHandler:
         else:
             # default image
             im = pygame.image.load(image_path).convert_alpha()
-            if size != 1:
-                _, _, w, h = im.get_rect()
-                im = pygame.transform.scale(im, (w*size, h*size))
+            # if size != 1:
+            #     _, _, w, h = im.get_rect()
+            #     im = pygame.transform.scale(im, (w*size, h*size))
             self.cache.update({image_path: {"image_type": 0, "size": size, "data": im}})
             return im
 

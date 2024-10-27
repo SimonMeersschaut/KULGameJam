@@ -1,19 +1,20 @@
 from world.world import world
 from audio import audio
+from filehandler import filehandler
 import pygame
 
 ################################# LOAD UP A BASIC WINDOW AND CLOCK #################################
 pygame.init()
-DISPLAY_W, DISPLAY_H = 1920, 1080
+# DISPLAY_W, DISPLAY_H = 1920, 1080
 pygame.display.set_caption("Anna's Ants")
-screen = pygame.display.set_mode(((DISPLAY_W,DISPLAY_H)))
+screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 running = True
 clock = pygame.time.Clock()
 pygame.mixer.init()
 ################################# LOAD PLAYER AND SPRITESHEET ###################################
 
 #################################### LOAD THE LEVEL #######################################
-world.preload()
+world.preload(screen)
 
 ################################# GAME LOOP ##########################
 while running:
@@ -25,8 +26,7 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
-        # if pygame.mouse.get_pressed()[0]:
-        #     world.spray(pygame.mouse.get_pos())
+                exit()
 
     ################################# UPDATE/ Animate SPRITE #################################
 
