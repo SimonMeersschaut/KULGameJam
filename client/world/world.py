@@ -9,6 +9,8 @@ from .food import *
 import time
 from .animation import RageAnimation, DeadAnimation, GameOverAnimation
 from .enemies import *
+# from old.connection import connection
+import requests
 from .rounds import LEVELS
 
 def rot_center(image, angle, x, y):
@@ -60,11 +62,15 @@ class World:
         self.last_wave_index = 0
     
     def load_wave(self, screen):
-        self.wave_data = LEVELS[self.level][meter.wave_index]
-        self.food = self.wave_data['food']
-        if meter.wave_index == 0 and self.level == 0:
-            # reset ants
-            self.ants = [Ant()]
+        try:
+            self.wave_data = LEVELS[self.level][meter.wave_index]
+            self.food = self.wave_data['food']
+            if meter.wave_index == 0 and self.level == 0:
+                # reset ants
+                self.ants = [Ant()]
+        except IndexError:
+            # Game Finished
+            self.finish()
     
     def run_animation(self, animation):
         self.animations.append(animation)
@@ -77,13 +83,17 @@ class World:
     
     def execute_rage(self, index:int):
         self.rage = True
-        print(self.wave_data['enemies'])
-        self.enemies += self.wave_data['enemies']
+        for new_enemy in self.wave_data['enemies']:
+            new_enemy.initialize()
+            self.enemies.append(new_enemy)
     
     def preload(self, screen):
         # load images
         meter.initialize(screen)
         self.load_wave(screen)
+        self.font = pygame.font.Font('resources/pixel.ttf', 70)
+        self.name = 'Simon'
+        self.save_score()
 
     def update(self, screen):
         if world.rage and self.enemies == []:
@@ -113,10 +123,23 @@ class World:
         
         for food in self.food:
             food.render(screen)
-        ...
+        # render score
+        self.text_rendered = self.font.render(str(self.score).zfill(3), True, (100,0,0))
+        screen.blit(self.text_rendered, (400, 200))
     
+    def save_score(self):
+        data = {"name": self.name, "score": self.score}
+        success = (requests.post('http://94.225.3.78:25565/post_score', json=data).text == 'Success')
+        if success:
+            # saved
+            ...
+        else:
+            # no success
+            ...
+        
     def finish(self):
         self.running = False
+        self.save_score()
         exit()
 
 class Camera:
@@ -134,8 +157,9 @@ class Meter:
         self.x = 700
         self.y = 600
         self.animation_frame = 0
-        self.score = 0 #TODO
+        self.score = 80 #TODO
         self.wave_index = 0
+        
     
     def initialize(self, screen):
         w, h = screen.get_size()
@@ -182,13 +206,13 @@ class Meter:
         # draw granny
         im = filehandler.get_image(Meter.HANDS_IMAGE)
         screen.blit(im, (self.x, self.y-9))
-
+        
 class Ant:
     IMAGE = 'resources/images/ant.set.png'
     SIZE = .25
     SPEED = 300
     ROTATION_SPEED = 3
-    WANDERING_DIST = 10000
+    WANDERING_DIST = 100
     MAX_DISTANCE = 100**2
     EATING_DISTANCE = 3000
     EATING_TIMEOUT = 1
@@ -200,9 +224,10 @@ class Ant:
         self.theta = 0
         self.dir = np.array([1, 0])
         self.frame_index = 0
-        self.wandering_dist = Ant.WANDERING_DIST
+        self.wandering_dist = Ant.WANDERING_DIST + 10000*random.random()
+        self.rotation_speed = Ant.ROTATION_SPEED + 2*random.random()
         self.eating_timeout = 0
-        self.speed = Ant.SPEED # * max(.1, random.random())
+        self.speed = Ant.SPEED + 100*random.random()
 
     def update_direction(self):
         target = pygame.mouse.get_pos()
@@ -215,7 +240,7 @@ class Ant:
             norm = np.linalg.norm(dir)
 
             normalized_vector = dir/norm
-            self.dir = slerp(self.dir, normalized_vector, Ant.ROTATION_SPEED*camera.delta_t)
+            self.dir = slerp(self.dir, normalized_vector, self.rotation_speed*camera.delta_t)
             self.theta = atan2(self.dir[1], self.dir[0])
     
     def check_for_food(self):

@@ -2,6 +2,7 @@ from world.world import world
 from audio import audio
 from filehandler import filehandler
 import pygame
+from menu import menu
 
 ################################# LOAD UP A BASIC WINDOW AND CLOCK #################################
 pygame.init()
@@ -11,10 +12,12 @@ screen = pygame.display.set_mode((1920, 1080), pygame.FULLSCREEN)
 running = True
 clock = pygame.time.Clock()
 pygame.mixer.init()
+mode = 'game' # TODO
 ################################# LOAD PLAYER AND SPRITESHEET ###################################
 
 #################################### LOAD THE LEVEL #######################################
 world.preload(screen)
+menu.initialize()
 
 ################################# GAME LOOP ##########################
 while running:
@@ -27,10 +30,18 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if mode == 'menu':
+                switch = menu.click(pygame.mouse.get_pos())
+                if switch:
+                    mode = 'game'
 
     ################################# UPDATE/ Animate SPRITE #################################
 
     ################################# UPDATE WINDOW AND DISPLAY #################################
     screen.fill((0, 180, 240)) # Fills the entire screen with light blue
-    world.render(screen)
+    if mode == 'menu':
+        menu.render(screen)
+    else:
+        world.render(screen)
     pygame.display.flip()

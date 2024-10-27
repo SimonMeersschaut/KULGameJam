@@ -26,5 +26,4 @@ class Connection:
         data = self.conn.recv(1024)
         return json.loads(data)
     
-if __name__ == '__main__':
-    conn = Connection()
+connection = Connection()
