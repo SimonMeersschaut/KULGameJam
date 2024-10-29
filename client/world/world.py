@@ -14,11 +14,13 @@ import requests
 from .rounds import LEVELS
 
 def rot_center(image, angle, x, y):
-    
-    rotated_image = pygame.transform.rotate(image, angle)
-    new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
-
-    return rotated_image, new_rect
+    try:
+        rotated_image = pygame.transform.rotate(image, angle)
+        new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
+        return rotated_image, new_rect
+    except pygame.error:
+        print('PYGAME ERROR!!')
+        return image, (10, 10, 10, 10)
 
 def slerp(v0, v1, t):
     """
@@ -49,15 +51,24 @@ def slerp(v0, v1, t):
 class World:
     TILE_SIZE = 48
     def __init__(self):
+        ...
+    
+    def preload(self, name, screen):
+        # world init
         self.animations = []
-        self.score = 0
+        self.score = 1
         self.rage = False
         self.running = True
         self.food = []
         self.enemies = []
         self.ants = [Ant()]
         self.level_data = {}
-        self.name = input('Please enter your name: ')
+        self.name = name
+        self.font = pygame.font.Font('resources/pixel.ttf', 70)
+        # other
+        meter.initialize(screen)
+        self.load_wave(screen)
+        # self.save_score()
     
     def load_wave(self, screen):
         # try:
@@ -66,7 +77,7 @@ class World:
             meter.bar = 0
             meter.score = 0
         
-        if meter.level > 5:
+        if meter.level >= 5:
             # Game Finished
             self.finish()
         
@@ -75,21 +86,25 @@ class World:
             slide_indices = LEVELS[meter.level]['pre-slides']
             if len(slide_indices) > 0:
                 # load slideshow
-                slide_indices.reverse()
-                self.slides = []
-                
-                # for slide_index in slide_indices:
-                #     self.slides.append(SlideAnimation(slide_index, on_done=lambda: self.run_animation(self.slides[-1])))
-                self.run_animation(SlideAnimation(slide_indices[0], on_done=None))
+                for i, slide_index in enumerate(slide_indices):
+                    self.run_animation(
+                        SlideAnimation(slide_index, time_offset=i*(SlideAnimation.DURATION-.1), on_done=None)
+                    )
         # spawn food
         self.food = []
         for (amount, food_class) in LEVELS[meter.level]['food']:
             self.food += [food_class() for _ in range(amount)]
+        # spawn food enemies
+        self.enemies += [
+            Foot(2*x)
+            for x in range(3)
+        ]
     
     def run_animation(self, animation):
         self.animations.append(animation)
     
     def do_rage(self, index:int):
+        self.food = []
         self.last_wave_index = index
         world.run_animation(RageAnimation(
             on_done=lambda: world.execute_rage(self.last_wave_index)
@@ -100,25 +115,21 @@ class World:
         if meter.bar == 1:
             # first rage
             enemy = Foot
+            amount = 4
         elif meter.bar == 2:
             enemy = Foot
+            amount = 4
         elif meter.bar == 3:
             enemy = AntEater
+            amount = 3
         elif meter.bar == 4:
             enemy = Tuinslang
+            amount = 1
         self.enemies = [
             enemy(delay=(6*wave))
-            for count in range(2)
-            for wave in range(meter.level)
+            for count in range(amount)
+            for wave in range(max(1, meter.level))
         ]
-    
-    def preload(self, screen):
-        # load images
-        meter.initialize(screen)
-        self.load_wave(screen)
-        self.font = pygame.font.Font('resources/pixel.ttf', 70)
-        self.name = 'Simon'
-        self.save_score()
 
     def update(self, screen):
         if world.rage and self.enemies == []:
@@ -161,18 +172,27 @@ class World:
     
     def save_score(self):
         data = {"name": self.name, "score": self.score}
-        success = (requests.post('http://94.225.3.78:25565/post_score', json=data).text == 'Success')
+        text = requests.post('http://94.225.3.78:25565/post_score', json=data).text
+        success = bool(text == 'success')
         if success:
             # saved
-            ...
+            print('Successfully uploaded')
         else:
             # no success
             ...
         
     def finish(self):
-        self.running = False
         self.save_score()
-        exit()
+        self.run_animation(
+            GameOverAnimation(
+                on_done=self.close_game
+            )
+        )
+    def close_game(self):
+        """Close the window to render the game
+        e.g. back to main menu"""
+        self.running = False
+
 
 class Camera:
     def __init__(self):
@@ -184,17 +204,20 @@ class Meter:
     METER_IMAGE = 'resources/images/meter.png'
     HANDS_IMAGE = 'resources/images/hands.png'
     GRANNY_IMAGE = 'resources/images/granny.png'
-    METER_SPEED = 10 # points/second
+    METER_SPEED = 15 # points/second
     BACKGROUND_COLOR = (181, 240, 224)
     def __init__(self):
+        ...
+    
+    def initialize(self, screen):
+        # self init
         self.x = 700
         self.y = 600
         self.animation_frame = 0
         self.score = 0
         self.bar = 0
         self.level = 0
-    
-    def initialize(self, screen):
+        # other
         w, h = screen.get_size()
         self.x = w/2 - (512/2)
         self.y = h - 64
@@ -332,10 +355,12 @@ class Ant:
             DeadAnimation(self.x, self.y)
         )
         world.ants.remove(self)
+        world.score -= 1
         if len(world.ants) == 0:
-            world.run_animation(
-                GameOverAnimation()
-            )
+            world.finish()
+            # world.run_animation(
+            #     GameOverAnimation()
+            # )
 
 world = World()
 camera = Camera()

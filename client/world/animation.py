@@ -5,8 +5,8 @@ from filehandler import filehandler
 
 class Animation:
     DURATION = 2
-    def __init__(self, on_done=None):
-        self.start_t = time.time()
+    def __init__(self, on_done=None, time_offset: float = 0):
+        self.start_t = time.time() + time_offset
         self.on_done = on_done
     
     def finish(self, camera, world):
@@ -23,20 +23,25 @@ class Animation:
             self.finish(camera, world)
 
 class SlideAnimation(Animation):
-    DURATION = 15
-    def __init__(self, index: int, on_done=None):
+    DURATION = 10
+    def __init__(self, index: int, time_offset: int = 0, on_done=None):
         self.index = index
-        super().__init__(on_done)
+        super().__init__(on_done, time_offset = time_offset)
     
     def render(self, camera, screen, world):
-        camera.delta_t = 0
-        im = filehandler.get_image(f'resources/images/slides/slide_{self.index}.png')
-        screen.blit(im, (0, 0))
-        camera.allow_rendering = False
-        h = 5
-        w = (time.time() - self.start_t)/SlideAnimation.DURATION*1280
-        pygame.draw.rect(screen, (0, 0, 0), (0, 720-h, w, h))
-        super().render(camera, screen, world)
+        if time.time() - self.start_t > 0:
+            if time.time() - self.start_t > 3 and pygame.mouse.get_pressed()[0]:
+                # move all animations
+                for animation in world.animations:
+                    animation.start_t -= .1
+            camera.delta_t = 0
+            im = filehandler.get_image(f'resources/images/slides/slide_{self.index}.png')
+            screen.blit(im, (0, 0))
+            camera.allow_rendering = False
+            h = 10
+            w = (time.time() - self.start_t)/SlideAnimation.DURATION*1280
+            pygame.draw.rect(screen, (0, 0, 0), (0, 720-h, w, h))
+            super().render(camera, screen, world)
 
 class RageAnimation(Animation):
     DURATION = 1
@@ -75,12 +80,13 @@ class GameOverAnimation(Animation):
         font = pygame.font.Font('resources/pixel.ttf', 70)
         self.text_rendered = font.render('Game Over!', True, (0,0,0))
     
-    def finish(self, camera, world):
+    # def finish(self, camera, world):
         # camera.delta_t = 1/60 # default speed
         # world.animation = False
         # if self.on_done is not None:
         #     self.on_done()
-        world.finish()
+        # world.finish()
+        # ...
     
     def render(self, camera, screen, world):
         # camera.delta_t = 0

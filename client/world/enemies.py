@@ -15,7 +15,7 @@ class AntEater(Enemy):
     def __init__(self, delay: int):
         # self.delay = delay
         self.x = 0
-        self.y = random.randint(0, 1000)
+        self.y = random.randint(0, 720)
         self.width = 128
         self.height = 260
         self.delay = delay
@@ -32,7 +32,7 @@ class AntEater(Enemy):
                     im = filehandler.get_image('resources/images/uitroepteken1.png')
                 else:
                     im = filehandler.get_image('resources/images/uitroepteken2.png')
-                screen.blit(im, (self.x, self.y))
+                screen.blit(im, (self.x - 32, self.y - 32))
             else:
                 # RUN!
                 self.x += 5
@@ -42,19 +42,19 @@ class AntEater(Enemy):
                     world.enemies.remove(self)
                 # check for dead ants
                 for ant in world.ants:
-                    if distance((ant.x, ant.y), (self.x + self.width/2, self.y + self.height/2)) < 100:
+                    if distance((ant.x, ant.y), (self.x, self.y)) < 100:
                         ant.kill()
                 # render
                 im = filehandler.get_image('resources/images/miereneters.set.png', tile_size=260, index=int(self.animation_frame % 2))
                 im = pygame.transform.rotate(im, 90)
-                screen.blit(im, (self.x, self.y))
+                screen.blit(im, (self.x - self.width/2, self.y - self.height/2))
 
 class Foot(Enemy):
     DURATION = 3
     WARNING_TIME =  1
     def __init__(self, delay: int):
         self.x = random.randint(0, 1000)
-        self.y = random.randint(0, 700)
+        self.y = random.randint(0, 500)
         self.width = 256
         self.height = 256
         self.start_t = time.time() + delay
@@ -91,13 +91,18 @@ class Tuinslang(Enemy):
     def __init__(self, delay: int):
         self.x = random.randint(0, 1000)
         self.y = 0
+        self.dir = 1
         # self.width = 256
         # self.height = 256
         self.start_t = time.time() + delay
         self.animation_frame = 0
     
     def render(self, world, screen):
-        self.x += 2
+        if self.x > 1280:
+            self.dir = -1
+        if self.x < 0:
+            self.dir = 1
+        self.x += 3*self.dir
         if time.time() - self.start_t > 0:
             # visible
             if time.time() - self.start_t < Foot.WARNING_TIME:
@@ -105,10 +110,6 @@ class Tuinslang(Enemy):
                 im = filehandler.get_image('resources/images/kraan.png')
                 screen.blit(im, (self.x-40, self.y))
                 screen.blit(im, (self.x-40, self.y))
-                # im = filehandler.get_image('resources/images/draaiende_kraan.png')
-                # pygame.transform.rotate(im, )
-                # screen.blit(im, (self.x-10, self.y+40))
-
             else:
                 if time.time() - self.start_t > Foot.WARNING_TIME + Foot.DURATION:
                     world.enemies.remove(self)
@@ -118,10 +119,6 @@ class Tuinslang(Enemy):
                     im = filehandler.get_image('resources/images/kraan.png')
                     screen.blit(im, (self.x-40, self.y))
                     screen.blit(im, (self.x-40, self.y))
-                    # im = filehandler.get_image('resources/images/draaiende_kraan.png')
-                    # pygame.transform.rotate(im, )
-                    # screen.blit(im, (self.x-10, self.y+40))
-
                     for ant in world.ants:
                         if self.x+ 7 > ant.x > self.x:
                             ant.kill()

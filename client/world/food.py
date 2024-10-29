@@ -38,38 +38,38 @@ class Appelsien(FoodItem):
 
 class Chip(FoodItem):
     STATES = 10
-    POINTS = 2
+    POINTS = 1
     IMAGE = 'resources/images/chip.set.png'
 
 class Snoep(FoodItem):
     STATES = 7
-    POINTS = 2
+    POINTS = 1
     IMAGE = 'resources/images/snoep.set.png'
 
 class Croissant(FoodItem):
     STATES = 9
-    POINTS = 3
+    POINTS = 1
     IMAGE = 'resources/images/croissant.set.png'
 
 class Bagguette(FoodItem):
     STATES = 7
-    POINTS = 3
+    POINTS = 1
     IMAGE = 'resources/images/bagguette.set.png'
 
 class Taart(FoodItem):
     STATES = 9
-    POINTS = 10
+    POINTS = 1
     IMAGE = 'resources/images/taart.set.png'
 ###
 
 class Apple(FoodItem):
     STATES = 7
-    POINTS = 4
+    POINTS = 1
     IMAGE = 'resources/images/apple.set.png'
 
 class Pizza(FoodItem):
     STATES = 9
-    POINTS = 5
+    POINTS = 1
     IMAGE = 'resources/images/pizza.set.png'
 
 class Druif(FoodItem):

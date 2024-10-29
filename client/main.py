@@ -16,7 +16,7 @@ mode = 'menu'
 ################################# LOAD PLAYER AND SPRITESHEET ###################################
 
 #################################### LOAD THE LEVEL #######################################
-world.preload(screen)
+world.preload('', screen)
 menu.initialize()
 
 audio.preload('resources/audio/background.mp3')
@@ -27,7 +27,7 @@ audio_counter = 0
 while running:
     clock.tick(60)
     audio_counter += 1
-    if audio_counter > 2040:
+    if audio_counter > 2100: # > 2040
         audio_counter = 0
         audio.play('resources/audio/background.mp3')
     ################################# CHECK PLAYER INPUT #################################
@@ -43,6 +43,10 @@ while running:
                 switch = menu.click(pygame.mouse.get_pos())
                 if switch:
                     mode = 'game'
+                    menu.save_name()
+                    world.preload(menu.name ,screen) # reset the game
+        if mode == 'menu':
+            menu.handle_event(event)
 
     ################################# UPDATE/ Animate SPRITE #################################
 
@@ -52,4 +56,6 @@ while running:
         menu.render(screen)
     else:
         world.render(screen)
+        if not world.running:
+            mode = 'menu'
     pygame.display.flip()
