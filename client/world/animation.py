@@ -23,7 +23,7 @@ class Animation:
             self.finish(camera, world)
 
 class SlideAnimation(Animation):
-    DURATION = 10
+    DURATION = 15
     def __init__(self, index: int, on_done=None):
         self.index = index
         super().__init__(on_done)

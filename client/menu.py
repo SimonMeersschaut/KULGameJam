@@ -5,7 +5,12 @@ from filehandler import filehandler
 class Menu:
     def __init__(self):
         data = requests.get('http://94.225.3.78:25565/get_scores').json()
-        self.sorted_data = sorted(data, key=lambda play: play['score'], reverse=True)
+
+        self.sorted_data = []
+        for (name, score) in data.items():
+            self.sorted_data.append({'name': name, 'score': score})
+
+        self.sorted_data = sorted(self.sorted_data, key=lambda play: int(play['score']), reverse=True)
 
     def initialize(self):
         self.font = pygame.font.Font('resources/pixel.ttf', 20)

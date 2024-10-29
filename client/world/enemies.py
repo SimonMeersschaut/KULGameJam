@@ -105,9 +105,9 @@ class Tuinslang(Enemy):
                 im = filehandler.get_image('resources/images/kraan.png')
                 screen.blit(im, (self.x-40, self.y))
                 screen.blit(im, (self.x-40, self.y))
-                im = filehandler.get_image('resources/images/draaiende_kraan.png')
+                # im = filehandler.get_image('resources/images/draaiende_kraan.png')
                 # pygame.transform.rotate(im, )
-                screen.blit(im, (self.x-10, self.y+40))
+                # screen.blit(im, (self.x-10, self.y+40))
 
             else:
                 if time.time() - self.start_t > Foot.WARNING_TIME + Foot.DURATION:
@@ -118,9 +118,9 @@ class Tuinslang(Enemy):
                     im = filehandler.get_image('resources/images/kraan.png')
                     screen.blit(im, (self.x-40, self.y))
                     screen.blit(im, (self.x-40, self.y))
-                    im = filehandler.get_image('resources/images/draaiende_kraan.png')
+                    # im = filehandler.get_image('resources/images/draaiende_kraan.png')
                     # pygame.transform.rotate(im, )
-                    screen.blit(im, (self.x-10, self.y+40))
+                    # screen.blit(im, (self.x-10, self.y+40))
 
                     for ant in world.ants:
                         if self.x+ 7 > ant.x > self.x:

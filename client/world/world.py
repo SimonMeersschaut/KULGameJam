@@ -193,7 +193,6 @@ class Meter:
         self.score = 0
         self.bar = 0
         self.level = 0
-        
     
     def initialize(self, screen):
         w, h = screen.get_size()
@@ -313,7 +312,8 @@ class Ant:
         if food and time.time() - self.eating_timeout > Ant.EATING_TIMEOUT:
             # eat
             food.eat(world)
-            world.ants.append(Ant())
+            world.ants += [Ant() for _ in range(type(food).POINTS)]
+            # world.ants.append(Ant())
             world.score += type(food).POINTS
             self.eating_timeout = time.time()
         self.move()

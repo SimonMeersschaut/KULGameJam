@@ -18,7 +18,7 @@ LEVEL3 = {
 
 LEVEL4 = {
     "pre-slides": [6],
-    "food": [(4, Croissant), (4, Bagguette)]
+    "food": [(8, Bagguette)] # TODO (4, Croissant),
 }
 
 LEVEL5 = {
@@ -28,7 +28,7 @@ LEVEL5 = {
 
 LEVEL6 = {
     "pre-slides": [8],
-    "food": [(1, Taart)]
+    "food": [(20, Taart)]
 }
 
 LEVELS = [
