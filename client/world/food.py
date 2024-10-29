@@ -5,7 +5,7 @@ import random
 class FoodItem:
     SIZE = 64
     def __init__(self):
-        self.x = random.randint(0, 1200)
+        self.x = random.randint(0, 1100)
         self.y = random.randint(0, 700)
         self.eaten = 0
     

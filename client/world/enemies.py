@@ -89,7 +89,7 @@ class Tuinslang(Enemy):
     DURATION = 3
     WARNING_TIME =  2
     def __init__(self, delay: int):
-        self.x = random.randint(0, 1000)
+        self.x = 0 if random.random() > .5 else 1200
         self.y = 0
         self.dir = 1
         # self.width = 256
@@ -98,11 +98,7 @@ class Tuinslang(Enemy):
         self.animation_frame = 0
     
     def render(self, world, screen):
-        if self.x > 1280:
-            self.dir = -1
-        if self.x < 0:
-            self.dir = 1
-        self.x += 3*self.dir
+        GENEROUS = 100
         if time.time() - self.start_t > 0:
             # visible
             if time.time() - self.start_t < Foot.WARNING_TIME:
@@ -111,6 +107,11 @@ class Tuinslang(Enemy):
                 screen.blit(im, (self.x-40, self.y))
                 screen.blit(im, (self.x-40, self.y))
             else:
+                if self.x > 1180 - GENEROUS:
+                    self.dir = -1
+                if self.x < 0 + GENEROUS:
+                    self.dir = 1
+                self.x += 4.5 * self.dir
                 if time.time() - self.start_t > Foot.WARNING_TIME + Foot.DURATION:
                     world.enemies.remove(self)
                 else:

@@ -88,16 +88,18 @@ class World:
                 # load slideshow
                 for i, slide_index in enumerate(slide_indices):
                     self.run_animation(
-                        SlideAnimation(slide_index, time_offset=i*(SlideAnimation.DURATION-.1), on_done=None)
+                        SlideAnimation(i, slide_index, on_done=None)
                     )
         # spawn food
         self.food = []
         for (amount, food_class) in LEVELS[meter.level]['food']:
             self.food += [food_class() for _ in range(amount)]
+
         # spawn food enemies
+        amount = min(meter.level, 3)
         self.enemies += [
             Foot(2*x)
-            for x in range(3)
+            for x in range(amount)
         ]
     
     def run_animation(self, animation):
@@ -106,6 +108,7 @@ class World:
     def do_rage(self, index:int):
         self.food = []
         self.last_wave_index = index
+        # if meter.level
         world.run_animation(RageAnimation(
             on_done=lambda: world.execute_rage(self.last_wave_index)
         ))
@@ -125,6 +128,7 @@ class World:
         elif meter.bar == 4:
             enemy = Tuinslang
             amount = 1
+        amount = min((meter.level + 1), amount)
         self.enemies = [
             enemy(delay=(6*wave))
             for count in range(amount)
@@ -147,10 +151,11 @@ class World:
         # render background
         im = filehandler.get_image('resources/images/background.png')
         screen.blit(im, (0, 0))
-
+            
         if len(self.animations) > 0:
             for animation in self.animations:
                 animation.render(camera, screen, self)
+
         # update entities
         if camera.allow_rendering:
             self.update(screen)
@@ -167,7 +172,7 @@ class World:
             for food in self.food:
                 food.render(screen)
             # render score
-            self.text_rendered = self.font.render(str(self.score).zfill(5), True, (100,0,0))
+            self.text_rendered = self.font.render(str(self.score).zfill(4), True, (0,0,0))
             screen.blit(self.text_rendered, (1050, 0))
     
     def save_score(self):

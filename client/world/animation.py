@@ -24,24 +24,32 @@ class Animation:
 
 class SlideAnimation(Animation):
     DURATION = 10
-    def __init__(self, index: int, time_offset: int = 0, on_done=None):
+    def __init__(self, order:int, index: int, on_done=None):
+        self.order = order
         self.index = index
-        super().__init__(on_done, time_offset = time_offset)
+        super().__init__(on_done, time_offset = 0)
     
     def render(self, camera, screen, world):
-        if time.time() - self.start_t > 0:
-            if time.time() - self.start_t > 3 and pygame.mouse.get_pressed()[0]:
-                # move all animations
-                for animation in world.animations:
-                    animation.start_t -= .1
+        if self.order == 0:
+            # first slide
+            # render image   
             camera.delta_t = 0
             im = filehandler.get_image(f'resources/images/slides/slide_{self.index}.png')
             screen.blit(im, (0, 0))
             camera.allow_rendering = False
             h = 10
             w = (time.time() - self.start_t)/SlideAnimation.DURATION*1280
-            pygame.draw.rect(screen, (0, 0, 0), (0, 720-h, w, h))
+            # pygame.draw.rect(screen, (color), (0, 720-h, w, h))
             super().render(camera, screen, world)
+
+            if time.time() - self.start_t > .5:
+                if pygame.mouse.get_pressed()[0]:
+                    for animation in world.animations:
+                        if type(animation) == SlideAnimation:
+                            animation.start_t = time.time()
+                            animation.order -= 1
+                    # close animation
+                    self.finish(camera, world)
 
 class RageAnimation(Animation):
     DURATION = 1
