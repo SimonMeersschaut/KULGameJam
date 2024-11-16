@@ -28,7 +28,7 @@ LEVEL5 = {
 
 LEVEL6 = {
     "pre-slides": [8],
-    "food": [(20, Taart)]
+    "food": [(10, Taart)]
 }
 
 LEVELS = [

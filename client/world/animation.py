@@ -23,7 +23,7 @@ class Animation:
             self.finish(camera, world)
 
 class SlideAnimation(Animation):
-    DURATION = 10
+    # DURATION = 10
     def __init__(self, order:int, index: int, on_done=None):
         self.order = order
         self.index = index
@@ -37,12 +37,12 @@ class SlideAnimation(Animation):
             im = filehandler.get_image(f'resources/images/slides/slide_{self.index}.png')
             screen.blit(im, (0, 0))
             camera.allow_rendering = False
-            h = 10
-            w = (time.time() - self.start_t)/SlideAnimation.DURATION*1280
+            # h s= 10
+            # w = (time.time() - self.start_t)/SlideAnimation.DURATION*1280
             # pygame.draw.rect(screen, (color), (0, 720-h, w, h))
-            super().render(camera, screen, world)
+            # super().render(camera, screen, world)
 
-            if time.time() - self.start_t > .5:
+            if time.time() - self.start_t > 3:
                 if pygame.mouse.get_pressed()[0]:
                     for animation in world.animations:
                         if type(animation) == SlideAnimation:

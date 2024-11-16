@@ -6,7 +6,7 @@ class FoodItem:
     SIZE = 64
     def __init__(self):
         self.x = random.randint(0, 1100)
-        self.y = random.randint(0, 700)
+        self.y = random.randint(0, 600)
         self.eaten = 0
     
     def render(self, screen):

@@ -71,13 +71,12 @@ class World:
         # self.save_score()
     
     def load_wave(self, screen):
-        # try:
         if meter.bar >= 4:
             meter.level += 1
             meter.bar = 0
             meter.score = 0
         
-        if meter.level >= 5:
+        if meter.level >= 6:
             # Game Finished
             self.finish()
         
@@ -188,11 +187,21 @@ class World:
         
     def finish(self):
         self.save_score()
-        self.run_animation(
-            GameOverAnimation(
-                on_done=self.close_game
+        if self.score > 0:
+            # win
+            self.run_animation(
+                SlideAnimation(
+                    index=9,
+                    order=0,
+                    on_done=self.close_game
+                )
             )
-        )
+        else:
+            self.run_animation(
+                GameOverAnimation(
+                    on_done=self.close_game
+                )
+            )
     def close_game(self):
         """Close the window to render the game
         e.g. back to main menu"""
