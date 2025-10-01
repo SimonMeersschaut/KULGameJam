@@ -4,16 +4,22 @@ from filehandler import filehandler
 
 class Menu:
     def __init__(self):
-        with open('resources/naam.txt', 'r') as f:
-            self.name = f.read()
-        
-        data = requests.get('http://94.225.3.78:25565/get_scores').json()
+        try:
+            with open('resources/naam.txt', 'r') as f:
+                self.name = f.read()
+            
+            data = requests.get('http://94.225.3.78:25565/get_scores').json()
 
-        self.sorted_data = []
-        for (name, score) in data.items():
-            self.sorted_data.append({'name': name, 'score': score})
+            self.sorted_data = []
+            for (name, score) in data.items():
+                self.sorted_data.append({'name': name, 'score': score})
 
-        self.sorted_data = sorted(self.sorted_data, key=lambda play: int(play['score']), reverse=True)
+            self.sorted_data = sorted(self.sorted_data, key=lambda play: int(play['score']), reverse=True)
+            self.connection = True
+        except:
+            print("no connection to the server.")
+            self.connection = False
+            self.sorted_data = []
     
     def save_name(self):
         with open('resources/naam.txt', 'w') as f:
