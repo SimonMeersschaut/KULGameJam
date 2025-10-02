@@ -63,7 +63,7 @@ class Menu:
             screen.blit(text1, (915, 90 + i*27))
             screen.blit(text2, (1200 - (length-1)*10, 90 + i*27))
         
-        im = self.font.render('Name: '+self.name, True, (0, 0, 0))
+        im = self.font.render('Name: ' + self.name, True, (0, 0, 0))
         screen.blit(im, (910, 50))
 
 menu = Menu()

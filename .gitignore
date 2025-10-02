@@ -1,2 +1,4 @@
 env/
 client/world/pycache/
+build/
+dist/

@@ -175,15 +175,16 @@ class World:
             screen.blit(self.text_rendered, (1050, 0))
     
     def save_score(self):
-        data = {"name": self.name, "score": self.score}
-        text = requests.post('http://94.225.3.78:25565/post_score', json=data).text
-        success = bool(text == 'success')
-        if success:
-            # saved
-            print('Successfully uploaded')
-        else:
-            # no success
-            ...
+        # data = {"name": self.name, "score": self.score}
+        # text = requests.post('http://...:port/post_score', json=data).text
+        # success = bool(text == 'success')
+        # if success:
+        #     # saved
+        #     print('Successfully uploaded')
+        # else:
+        #     # no success
+        #     ...
+        ...
         
     def finish(self):
         self.save_score()
